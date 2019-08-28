@@ -18,3 +18,7 @@ Adaptive Gaussian Model has API(Average Pixel Intensity) values very near to the
 Gaussian Mixture Model has API that updates slower than AGM. These are two examples during SUNSET and SUNRISE
 
 ![AGM-GMM update light - comparison](https://github.com/daniele21/Background-Subtraction/blob/master/Results/Screenshot%202019-08-28%2020:15:20.png)
+
+![image2](https://github.com/daniele21/Background-Subtraction/blob/master/Results/Screenshot%202019-08-28%2020:15:55.png)
+
+![image3](https://github.com/daniele21/Background-Subtraction/blob/master/Results/Screenshot%202019-08-28%2020:16:23.png)
