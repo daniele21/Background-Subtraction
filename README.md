@@ -11,3 +11,5 @@ We tried to use the one
 based on gaussians model, called Gaussian Mixture
 Model (GMM), and make it adaptive to a 24h video taken from 
 some italian highway.
+
+![Comparison of API(Average Pixel Intensity) relatives to AGM - GMM - Original frame][https://github.com/daniele21/Background-Subtraction/blob/master/Results/GMM%2CAGM_sunrise_trend.png]
