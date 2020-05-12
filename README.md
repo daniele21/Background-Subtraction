@@ -1,24 +1,13 @@
 # Background-Subtraction
-Adaptive Gaussians Model (AGM) applied to the Gaussian Mixture Model (GMM) for the background subtraction
 
-Background Subtraction is a Computer Vision problem
-of understanding and concretely detecting what is
-background in a scene, clean from any kind of
-foreground of that scene. It is applied to a video as input
-and it suggests frame by frame the detected background.
+## Description:
+Background Subtraction is a Computer Vision problem of understanding and concretely detecting what is background in a scene, clean from any kind of foreground of that scene. It is applied to a video as input and it suggests frame by frame the detected background.
+Gaussian Mixture Models (GMM) are able to provide a good solution for the background subtractrion problem: for each frame of a video, the GMM can reproduce the background behind the foreground.
 
-We tried to use the one
-based on gaussians model, called Gaussian Mixture
-Model (GMM), and make it adaptive to a 24h video taken from 
-some italian highway.
+## Goal:
+The goal is to improve the GMM, in order to overcome its limits: GMM is not enough adaptive to the change of natural light. This project provides the AGM (Adaptive Gaussian Model), making the GMM adaptive to the change of natural lights.
 
-Results:
+## Domain:
+Highway 24h Video taken by 'Autostrade per l'Italia' from https://www.autostrade.it/.
 
-Adaptive Gaussian Model has API(Average Pixel Intensity) values very near to the real one(Original frame).
-Gaussian Mixture Model has API that updates slower than AGM. These are two examples during SUNSET and SUNRISE
-
-![AGM-GMM update light - comparison](https://github.com/daniele21/Background-Subtraction/blob/master/Results/Screenshot%202019-08-28%2020:15:20.png)
-
-![image2](https://github.com/daniele21/Background-Subtraction/blob/master/Results/Screenshot%202019-08-28%2020:15:55.png)
-
-![image3](https://github.com/daniele21/Background-Subtraction/blob/master/Results/Screenshot%202019-08-28%2020:16:23.png)
+## GMM Limits:
