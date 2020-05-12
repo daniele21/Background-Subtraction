@@ -1,0 +1,16 @@
+python3 args
+
+arg 0: 'nome file.py'
+arg 1: 'sunset', 'sunrise' o 'numero webcam(12, ...)'
+arg 2: 'ogni quanti video vedere l'update del AGM (15s per video)'
+
+
+demo
+
+python3 demo_AGM.py sunset 1
+python3 demo_AGM.py sunset 5
+python3 demo_AGM.py sunrise 1
+python3 demo_AGM.py sunrise 5
+
+python3 demo_GMM.py sunrise
+python3 demo_GMM.py sunset

@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue May 21 18:19:24 2019
+Created on Tue May 14 09:02:08 2019
 
 @author: daniele
-
 """
 
 #%% --------------------------------- IMPORT ---------------------------------
@@ -12,9 +11,8 @@ import cv2 as cv
 import os
 import numpy as np
 import time
-import gaussians_v2 as gauss
+import gaussians as gauss
 import randomPoints as rp
-from matplotlib import pyplot as plt
 
 #%% ----------------------------- INITIALIZATION -----------------------------
 DAY = 'day'
@@ -23,13 +21,12 @@ ESC_KEY = 27
 WHITE_PIXEL = 255
 GREY_PIXEL = 127
 
-source = './webcam/web_sunrise/'
+source = './webcam/web/'
 threshold = 70
 backgroundRatio = 0.7
 originals = []
 backgrounds = []
-APIs = []
-bg_APIs = []
+
 #==============================================================================
 # # HYPERPARAMETERS
 #==============================================================================
@@ -41,7 +38,7 @@ avg_pixels = gauss.initGaussian().tolist()
 #%% ----------------------------------MAIN------------------------------------
 
 originals,backgrounds,foregrounds,avg_pixels = backgroundSubtraction(source,
-                   frame_rate,take_freq, avg_pixels, APIs, bg_APIs)
+                   frame_rate,take_freq, avg_pixels)
 
 
 #%% ------------------------- BACKGROUND SUBTRACTION -------------------------
@@ -62,7 +59,7 @@ originals,backgrounds,foregrounds,avg_pixels = backgroundSubtraction(source,
 #
 ####################################################################################
 
-def backgroundSubtraction(source, frame_rate, take_freq, avg_pixels, APIs, bg_APIs):
+def backgroundSubtraction(source, frame_rate, take_freq, avg_pixels):
         
     videoPaths = []
     original_frames = []
@@ -70,31 +67,18 @@ def backgroundSubtraction(source, frame_rate, take_freq, avg_pixels, APIs, bg_AP
     fg_frames = []
     initialThreshold = 70
     initialRatio = 0.9
-    initial_learning_rate = -1   # Automatic
-
-# =============================================================================
-# --------------------------LEARNING RATE--------------------------------------
-#     alpha = 0.005
-#     alpha = 0.01 --> abbastanza stabile, solo per lunghi periodi
-#     alpha = 0.03 --> simpatico per approsimare aggiornamenti piu rapidi
-#     alpha = 0.05 --> buono per fase di transizione
-# =============================================================================
-
 
     gaussians, y_gaussians = gauss.overallGaussians(avg_pixels)
     gauss.plotDayNightGaussian(gaussians)
     learning_rate = gauss.generateLearningRateTrading(gaussians)
     gauss.plotLearningRate(learning_rate)
     threshold = gauss.generateThreshold(gaussians)
-    gauss.comparisonThresholdGaussians(gaussians, threshold)
-    gauss.plotThreshold(threshold)
+#    gauss.comparisonThresholdGaussians(gaussians, threshold)
 #    gauss.comparisonLearningRateGaussians(gaussians, learning_rate)
     
     mog = cv.createBackgroundSubtractorMOG2()    
     mog.setVarThreshold(initialThreshold)
     mog.setBackgroundRatio(initialRatio)
-    
-    alpha = initial_learning_rate
     
     videoList = os.listdir(source)
     for video in videoList:
@@ -145,7 +129,7 @@ def backgroundSubtraction(source, frame_rate, take_freq, avg_pixels, APIs, bg_AP
                     gray = cv.cvtColor(frame,cv.COLOR_BGR2GRAY)
 #                    frames.append(gray)
                     
-                    fg = mog.apply(gray, learningRate = alpha)
+                    fg = mog.apply(gray)
                     bg = mog.getBackgroundImage()
                     
                     cv.imshow('Original video', gray) 
@@ -176,9 +160,7 @@ def backgroundSubtraction(source, frame_rate, take_freq, avg_pixels, APIs, bg_AP
         avg_pixel = rp.computePixelIntensityAverage(gray)
         avg_pixels = weightedAppend(avg_pixel, avg_pixels)
         
-        APIs.append(avg_pixel)
-        bg_APIs.append(rp.computePixelIntensityAverage(bg))
-        print("--Pixel average computed: {}".format(avg_pixel))
+        print("Avg Pixel computed: {}".format(avg_pixel))
         
 #        if(len(fg_frames)>2):
 #            prev_fg = fg_frames[len(fg_frames)-2]
@@ -188,11 +170,11 @@ def backgroundSubtraction(source, frame_rate, take_freq, avg_pixels, APIs, bg_AP
         
         # UPDATING GAUSSIANS        
         new_learning_rate, new_gaussians = updateGaussians(avg_pixels, 
-                                                gaussians, learning_rate)
+                                                           gaussians, learning_rate)
             
         # UPDATING BACKGROUND RATIO ---> (1 - LEANRING RATE)
-        alpha = updateLearningRateValue(avg_pixel, new_learning_rate)
-#        mog.setBackgroundRatio(ratio)
+        ratio = updateBackgroundRatio(avg_pixel, new_learning_rate)
+        mog.setBackgroundRatio(ratio)
         
         # UPDATING THRESHOLD
         threshold_value = updateThreshold(avg_pixel, threshold)
@@ -254,7 +236,7 @@ def weightedAppend(avg_pixel, avg_pixels):
 #
 #==============================================================================    
 def updateGaussians(avg_pixels, old_gaussians, old_learning_rate):  
-#    print("\n-----------START UPDATING GAUSSIANS-----------")   
+    print("\n-----------START UPDATING GAUSSIANS-----------")   
     
     new_gaussians, new_y_gaussians = gauss.overallGaussians(avg_pixels)
     new_learning_rate = gauss.generateLearningRateTrading(new_gaussians)
@@ -262,7 +244,7 @@ def updateGaussians(avg_pixels, old_gaussians, old_learning_rate):
 #    gauss.GaussianComparison(old_gaussians, new_gaussians,
 #                                old_learning_rate, new_learning_rate)
     
-#    print("\n-----------END UPDATING GAUSSIANS-----------")    
+    print("\n-----------END UPDATING GAUSSIANS-----------")    
     
     return new_learning_rate, new_gaussians
 
@@ -277,20 +259,19 @@ def updateGaussians(avg_pixels, old_gaussians, old_learning_rate):
 #   - ratio          --> updated background ratio
 #  
 #==============================================================================
-def updateLearningRateValue(avg_pixel, learning_rate):
+def updateBackgroundRatio(avg_pixel, learning_rate):
     idx = intersection(learning_rate[DAY], learning_rate[NIGHT])
     
     # day time case
     if(avg_pixel >= idx):
-      alpha = learning_rate[DAY][avg_pixel]
+      ratio = 1 - learning_rate[DAY][idx]
       
     # night time case
     else:
-      alpha = learning_rate[NIGHT][avg_pixel]
+      ratio = learning_rate[NIGHT][idx]
     
-    print('--Learning Rate : {}'.format(alpha))
-    
-    return alpha
+    print('--Learning Rate : {}'.format(1 - ratio))
+    return ratio
 # =============================================================================
 # ------------------------------UDPATE THRESHOLD-------------------------------
 #    
@@ -338,8 +319,17 @@ def showImage(frame):
             break
         
     cv.destroyAllWindows()
-    
 
+
+#%% Compute means
+
+means = []
+for frame in backgrounds:
+    means.append(dynamicRatioEvaluation(frame))
+
+#plt.hist(means, 50)
+
+#==============================================================================
 #%%
 list_image = backgrounds
 i = 0
@@ -347,16 +337,13 @@ cycle = True
 
 while(cycle):
     
-    cv.imshow('Backgroung AGM+GMM', backgrounds[i])
-#    cv.imshow('Foregroung', foregrounds[i])
-    cv.imshow('Original AGM+GMM', originals[i])
+    cv.imshow('Backgroung GMM7', backgrounds[i])
+    cv.imshow('Foregroung', foregrounds[i])
+    cv.imshow('Original GMM7', originals[i])
 #    cv.imshow('Dynamic Evaluation', drawAllRectangles(originals[i]))    
 
 
-    print("____________")
-    print("Frame {}".format(i))  
-    print("API = {}".format(APIs[i*2]))
-    print("bg_API = {}".format(bg_APIs[i*2]))
+    print("Frame {}".format(i))    
     
     k = cv.waitKey(30)
     
@@ -371,7 +358,7 @@ while(cycle):
                 elif(k == 97 and i > 0):
                         i = i - 1   # go to previous frame
                         
-                # key = ESCs
+                # key = ESC
                 elif(k == 27):
                     print('Closing cv windows')
                     cv.destroyAllWindows()
@@ -381,36 +368,5 @@ while(cycle):
 cv.destroyAllWindows()
     
 #%%
-plt.title('Backgroung APIs --> Red\nOriginal Frame APIs --> Blue')
-plt.xlabel('# Frame')
-plt.ylabel('API')
-plt.plot(bg_APIs, color = 'r')
-plt.plot(APIs, color = 'b')
-plt.show()
 
-plt.title('Original Frame APIs')
-plt.xlabel('# Frame')
-plt.ylabel('API')
-plt.plot(APIs, color = 'b')
-plt.show()
 
-plt.title('Backgroung APIs')
-plt.xlabel('# Frame')
-plt.ylabel('API')
-plt.plot(bg_APIs, color = 'r')
-plt.show()
-
-#%%
-plt.title('Original Frame APIs --> Blue\nAGM Backgroung APIs --> Red\n'+
-          'GMM Background APIs --> Green')
-plt.xlabel('# Frame')
-plt.ylabel('API')
-plt.plot(bg_APIs, color = 'r')
-plt.plot(APIs, color = 'b')
-plt.plot(bg_APIs_GM, color = 'g')
-plt.show()
-
-#%%
-bg_APIs_GM = []
-for item in bg_APIs_GMM:    
-    bg_APIs_GM.append(int(item))

@@ -1,29 +1,54 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue May 21 18:19:24 2019
+Created on Wed Jun 19 23:18:09 2019
 
 @author: daniele
-
 """
 
-#%% --------------------------------- IMPORT ---------------------------------
+#%%
+
 import cv2 as cv
 import os
 import numpy as np
 import time
-import gaussians_v2 as gauss
-import randomPoints as rp
-from matplotlib import pyplot as plt
+from Library import gaussians_v2 as gauss
+from Library import randomPoints as rp
+import sys
 
+#%%
+
+def main():
+    if(len(sys.argv) < 2):
+        print('No args intercepted')
+        exit(-1)
+    print(sys.argv)
+    
+    # print command line arguments
+    videoCode = sys.argv[1]
+    freq_comparison = sys.argv[2]
+#    print('0:{}'.format(sys.argv[1]))
+#    print('1:{}'.format(sys.argv[2]))
+    
+    return videoCode, freq_comparison
+    
+if __name__ == "__main__":
+    videoCode, freq_comparison = main()
+#    print('0:{}'.format(videoCode))
+#    print('1:{}'.format(freq_comparison))
+ 
 #%% ----------------------------- INITIALIZATION -----------------------------
 DAY = 'day'
 NIGHT = 'night'
 ESC_KEY = 27
 WHITE_PIXEL = 255
 GREY_PIXEL = 127
+#videoCode = 'sunset'
 
-source = './webcam/web_sunrise/'
+source = './webcam/web_' + str(videoCode)
+#source = './webcam/web_' + 'prova'
+#freq_comparison = 5
+
 threshold = 70
 backgroundRatio = 0.7
 originals = []
@@ -37,12 +62,6 @@ frame_rate = 5
 take_freq = 2
 WEIGHT = 3
 avg_pixels = gauss.initGaussian().tolist()
-
-#%% ----------------------------------MAIN------------------------------------
-
-originals,backgrounds,foregrounds,avg_pixels = backgroundSubtraction(source,
-                   frame_rate,take_freq, avg_pixels, APIs, bg_APIs)
-
 
 #%% ------------------------- BACKGROUND SUBTRACTION -------------------------
 
@@ -71,7 +90,7 @@ def backgroundSubtraction(source, frame_rate, take_freq, avg_pixels, APIs, bg_AP
     initialThreshold = 70
     initialRatio = 0.9
     initial_learning_rate = -1   # Automatic
-
+    
 # =============================================================================
 # --------------------------LEARNING RATE--------------------------------------
 #     alpha = 0.005
@@ -82,13 +101,17 @@ def backgroundSubtraction(source, frame_rate, take_freq, avg_pixels, APIs, bg_AP
 
 
     gaussians, y_gaussians = gauss.overallGaussians(avg_pixels)
-    gauss.plotDayNightGaussian(gaussians)
     learning_rate = gauss.generateLearningRateTrading(gaussians)
-    gauss.plotLearningRate(learning_rate)
     threshold = gauss.generateThreshold(gaussians)
-    gauss.comparisonThresholdGaussians(gaussians, threshold)
-    gauss.plotThreshold(threshold)
-#    gauss.comparisonLearningRateGaussians(gaussians, learning_rate)
+    
+# =============================================================================
+#   INIT PLOTS
+#    
+    gauss.initPlots(gaussians, learning_rate, threshold)    
+#    
+#    
+# =============================================================================
+    
     
     mog = cv.createBackgroundSubtractorMOG2()    
     mog.setVarThreshold(initialThreshold)
@@ -124,7 +147,6 @@ def backgroundSubtraction(source, frame_rate, take_freq, avg_pixels, APIs, bg_AP
         cap = cv.VideoCapture(videoPaths[index])
         
         print('|  '+str(index+1)+'-  load video:   '+videoPaths[index]+'\t|')
-        
         index += 1
         
         end = False
@@ -148,9 +170,9 @@ def backgroundSubtraction(source, frame_rate, take_freq, avg_pixels, APIs, bg_AP
                     fg = mog.apply(gray, learningRate = alpha)
                     bg = mog.getBackgroundImage()
                     
-                    cv.imshow('Original video', gray) 
-                    cv.imshow('Background detected', bg)
-                    cv.imshow('Foreground detected', fg)                 
+                    cv.imshow('Original video AGM', gray)
+                    cv.imshow('Background detected AGM', bg)
+                    cv.imshow('Foreground detected AGM', fg)                 
                     
                     k = cv.waitKey(30)
     
@@ -198,7 +220,8 @@ def backgroundSubtraction(source, frame_rate, take_freq, avg_pixels, APIs, bg_AP
         threshold_value = updateThreshold(avg_pixel, threshold)
         mog.setVarThreshold(threshold_value)
         
-        gauss.GaussianComparison(gaussians, new_gaussians,
+        if(index%int(freq_comparison)==1):
+            gauss.GaussianComparison(gaussians, new_gaussians,
                                 learning_rate, new_learning_rate, avg_pixel)
         
         endVideo_time = time.time()
@@ -216,6 +239,9 @@ def backgroundSubtraction(source, frame_rate, take_freq, avg_pixels, APIs, bg_AP
     print('|\t  END BACKGROUND SUBTRACTION\t\t|')
     print('|\t\t\t\t\t\t|')
     print('-------------------------------------------------')   
+    
+    showComputation(bg_frames, fg_frames, original_frames)
+    gauss.plotAPIcomparison(APIs, bg_APIs, 'AGM')
     
     return original_frames, bg_frames, fg_frames, avg_pixels
 
@@ -325,92 +351,47 @@ def intersection(func1, func2):
     idx = idx[0][0]
     
     return idx
-# =============================================================================
-# ------------------------------SHOW IMAGE-------------------------------------
-# =============================================================================
-def showImage(frame):
+
+def showComputation(bg, fg, frames):
+
+    list_image = bg
+    i = 0
+    cycle = True
+    while(cycle):
+        
+        cv.imshow('AGM+GMM Backgroung', bg[i])
+        cv.imshow('AGM+GMM Foregroung', fg[i])
+        cv.imshow('AGM+GMM Original frame', frames[i])
+    #    cv.imshow('Dynamic Evaluation', drawAllRectangles(originals[i]))    
     
-    while(True):
-        cv.imshow("image", frame)
+    
+        print("____________")
+        print("Frame {}".format(i))  
+        print("API = {}".format(APIs[i*2]))
+        print("bg_API = {}".format(bg_APIs[i*2]))
         
         k = cv.waitKey(30)
-        if(k ==27):
-            break
+        
+        while(k != 97 and k != 115 and k != 27):
+                    k = cv.waitKey(30) & 0xff
+            
+                    # key = s
+                    if(k == 115 and i < len(list_image)  - 1):
+                            i = i + 1   # go to next frame
+                            
+                    # key = a
+                    elif(k == 97 and i > 0):
+                            i = i - 1   # go to previous frame
+                            
+                    # key = ESCs
+                    elif(k == 27):
+                        print('Closing cv windows')
+                        cv.destroyAllWindows()
+                        cycle = False
+                        break
         
     cv.destroyAllWindows()
-    
 
 #%%
-list_image = backgrounds
-i = 0
-cycle = True
-
-while(cycle):
-    
-    cv.imshow('Backgroung AGM+GMM', backgrounds[i])
-#    cv.imshow('Foregroung', foregrounds[i])
-    cv.imshow('Original AGM+GMM', originals[i])
-#    cv.imshow('Dynamic Evaluation', drawAllRectangles(originals[i]))    
-
-
-    print("____________")
-    print("Frame {}".format(i))  
-    print("API = {}".format(APIs[i*2]))
-    print("bg_API = {}".format(bg_APIs[i*2]))
-    
-    k = cv.waitKey(30)
-    
-    while(k != 97 and k != 115 and k != 27):
-                k = cv.waitKey(30) & 0xff
-        
-                # key = s
-                if(k == 115 and i < len(list_image)  - 1):
-                        i = i + 1   # go to next frame
-                        
-                # key = a
-                elif(k == 97 and i > 0):
-                        i = i - 1   # go to previous frame
-                        
-                # key = ESCs
-                elif(k == 27):
-                    print('Closing cv windows')
-                    cv.destroyAllWindows()
-                    cycle = False
-                    break
-    
-cv.destroyAllWindows()
-    
-#%%
-plt.title('Backgroung APIs --> Red\nOriginal Frame APIs --> Blue')
-plt.xlabel('# Frame')
-plt.ylabel('API')
-plt.plot(bg_APIs, color = 'r')
-plt.plot(APIs, color = 'b')
-plt.show()
-
-plt.title('Original Frame APIs')
-plt.xlabel('# Frame')
-plt.ylabel('API')
-plt.plot(APIs, color = 'b')
-plt.show()
-
-plt.title('Backgroung APIs')
-plt.xlabel('# Frame')
-plt.ylabel('API')
-plt.plot(bg_APIs, color = 'r')
-plt.show()
-
-#%%
-plt.title('Original Frame APIs --> Blue\nAGM Backgroung APIs --> Red\n'+
-          'GMM Background APIs --> Green')
-plt.xlabel('# Frame')
-plt.ylabel('API')
-plt.plot(bg_APIs, color = 'r')
-plt.plot(APIs, color = 'b')
-plt.plot(bg_APIs_GM, color = 'g')
-plt.show()
-
-#%%
-bg_APIs_GM = []
-for item in bg_APIs_GMM:    
-    bg_APIs_GM.append(int(item))
+originals,backgrounds,foregrounds,avg_pixels = backgroundSubtraction(source,
+                   frame_rate,take_freq, avg_pixels, APIs, bg_APIs)

@@ -8,10 +8,10 @@ Created on Thu May  9 23:31:52 2019
 #%% IMPORT
 #==============================================================================
 import numpy as np
-import cv2 as cv
-from scipy.stats import norm
-import gaussians_v2 as gauss
-from matplotlib import pyplot as plt
+#import cv2 as cv
+#from scipy.stats import norm
+#from Library import gaussians_v2 as gauss
+#from matplotlib import pyplot as plt
 
 DAY = 'day'
 NIGHT = 'night'
@@ -99,62 +99,62 @@ def drawRectangle(frame, xA, xB, yA, yB):
         
     return temp;
 #==============================================================================
-def showImage(frame):
-    
-    while(True):
-        cv.imshow("image", frame)
-        
-        k = cv.waitKey(30)
-        if(k ==27):
-            break
-        
-    cv.destroyAllWindows()
+#def showImage(frame):
+#    
+#    while(True):
+#        cv.imshow("image", frame)
+#        
+#        k = cv.waitKey(30)
+#        if(k ==27):
+#            break
+#        
+#    cv.destroyAllWindows()
 
 #==============================================================================
 #%%
-    
-    gauss_distr = {DAY: norm(100,3), NIGHT: norm(60,3)}
-    X = np.linspace(0,255,255)
-    
-    
-    MEAN_DAY = gauss_distr[DAY].mean()
-    STD_DAY = gauss_distr[DAY].std()
-    OFFSET_DAY = -2
-
-    MEAN_NIGHT = gauss_distr[NIGHT].mean()+10
-    STD_NIGHT = gauss_distr[NIGHT].std()
-    OFFSET_NIGHT = -2
-    
-    RANGE = 0.05
-    MIN_VALUE = 0.01
-    
-    gauss_distr_shifted = {DAY: norm(MEAN_DAY + OFFSET_DAY, STD_DAY),
-                           NIGHT: norm(MEAN_NIGHT + OFFSET_NIGHT, STD_NIGHT)}
-    
-    density_shifted_DAY = gauss_distr_shifted[DAY].cdf(X)
-    density_shifted_NIGHT = gauss_distr_shifted[NIGHT].cdf(X)
-    densities_shifted = {DAY: density_shifted_DAY, NIGHT: density_shifted_NIGHT}
-  
-    learning_rate_DAY = MIN_VALUE + (1 - densities_shifted[DAY]) * (RANGE - MIN_VALUE)
-    learning_rate_NIGHT = MIN_VALUE + (densities_shifted[NIGHT]) * (RANGE - MIN_VALUE)
-    learning_rate = {DAY: learning_rate_DAY, NIGHT: learning_rate_NIGHT}
-
-    gauss.plotLearningRate(learning_rate)
+#    
+#    gauss_distr = {DAY: norm(100,3), NIGHT: norm(60,3)}
+#    X = np.linspace(0,255,255)
+#    
+#    
+#    MEAN_DAY = gauss_distr[DAY].mean()
+#    STD_DAY = gauss_distr[DAY].std()
+#    OFFSET_DAY = -2
+#
+#    MEAN_NIGHT = gauss_distr[NIGHT].mean()+10
+#    STD_NIGHT = gauss_distr[NIGHT].std()
+#    OFFSET_NIGHT = -2
+#    
+#    RANGE = 0.05
+#    MIN_VALUE = 0.01
+#    
+#    gauss_distr_shifted = {DAY: norm(MEAN_DAY + OFFSET_DAY, STD_DAY),
+#                           NIGHT: norm(MEAN_NIGHT + OFFSET_NIGHT, STD_NIGHT)}
+#    
+#    density_shifted_DAY = gauss_distr_shifted[DAY].cdf(X)
+#    density_shifted_NIGHT = gauss_distr_shifted[NIGHT].cdf(X)
+#    densities_shifted = {DAY: density_shifted_DAY, NIGHT: density_shifted_NIGHT}
+#  
+#    learning_rate_DAY = MIN_VALUE + (1 - densities_shifted[DAY]) * (RANGE - MIN_VALUE)
+#    learning_rate_NIGHT = MIN_VALUE + (densities_shifted[NIGHT]) * (RANGE - MIN_VALUE)
+#    learning_rate = {DAY: learning_rate_DAY, NIGHT: learning_rate_NIGHT}
+#
+#    gauss.plotLearningRate(learning_rate)
     
 #%%
-    x_axis = np.linspace(-20, 20, 1000)
-    
-    g1 = norm(0, 3.2).pdf(x_axis);
-    g2 = norm(5, 3.7).pdf(x_axis);
-    g3 = norm(-5, 3.1).pdf(x_axis);
-    g4 = norm(8, 3.2).pdf(x_axis);
-    g5 = norm(-7, 3.5).pdf(x_axis);
-    
-    plt.plot(x_axis, g1)
-    plt.plot(x_axis, g2)
-    plt.plot(x_axis, g3)
-    plt.plot(x_axis, g4)
-    plt.plot(x_axis, g5)
-    
-    plt.grid()
-    plt.show()
+#    x_axis = np.linspace(-20, 20, 1000)
+#    
+#    g1 = norm(0, 3.2).pdf(x_axis);
+#    g2 = norm(5, 3.7).pdf(x_axis);
+#    g3 = norm(-5, 3.1).pdf(x_axis);
+#    g4 = norm(8, 3.2).pdf(x_axis);
+#    g5 = norm(-7, 3.5).pdf(x_axis);
+#    
+#    plt.plot(x_axis, g1)
+#    plt.plot(x_axis, g2)
+#    plt.plot(x_axis, g3)
+#    plt.plot(x_axis, g4)
+#    plt.plot(x_axis, g5)
+#    
+#    plt.grid()
+#    plt.show()
