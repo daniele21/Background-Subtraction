@@ -19,7 +19,9 @@ Highway 24h Video taken by 'Autostrade per l'Italia' from https://www.autostrade
 This analysis is based on the Average Pixel Intensity (API) and it shows how the detected background adapts to the changing lights (sunset or sunrise).
 
 #### Analysis: GMM provides background subtraction frames that are behind in terms of natural lights 
-![GMM result](https://github.com/daniele21/Background-Subtraction/blob/master/Results/GMM_results.png)
+
+<img src="https://github.com/daniele21/Background-Subtraction/blob/master/Results/GMM_results.png" width="500">
+
 - The red line represents the API for the original frames of the video
 - The greed line represents the API for the background detection frames of GMM
 
@@ -31,7 +33,9 @@ This analysis is based on the Average Pixel Intensity (API) and it shows how the
 ![AGM demo](https://github.com/daniele21/Background-Subtraction/blob/master/Results/AGM%20solution.png)
 
 ### Lights Analysis: AGM provides background subtraction frames very near to the real ones
-![AGM result](https://github.com/daniele21/Background-Subtraction/blob/master/Results/AGM_results.png)
+
+<img src="https://github.com/daniele21/Background-Subtraction/blob/master/Results/AGM_results.png" width="500">
+
 - The red line represents the API for the original frames of the video
 - The greed line represents the API for the background detection frames of AGM
 
