@@ -44,7 +44,13 @@ This analysis is based on the Average Pixel Intensity (API) and it shows how the
 #### AGM: ![video AGM](https://github.com/daniele21/Background-Subtraction/blob/master/Results/AGM.flv)
 
 # Run Demo
-  - from Demo folder run python3 ./demo_AGM.py sunrise 1, where 1 refers to the webcam 1   or
-                     run python3 ./demo_AGM.py sunset 1   or
-                     run python3 ./demo_GMM.py sunrise 1  or
-                     run python3 ./demo_GMM.py sunset 1
+From Demo folder 
+>
+   > run 'python3 ./demo_AGM.py sunrise 1', where 1 refers to the webcam 1   or
+   
+   > run 'python3 ./demo_AGM.py sunset 1'   or
+   
+   > run 'python3 ./demo_GMM.py sunrise 1'  or
+   
+   > run 'python3 ./demo_GMM.py sunset 1'
+>
