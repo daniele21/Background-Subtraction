@@ -11,3 +11,24 @@ The goal is to improve the GMM, in order to overcome its limits: GMM is not enou
 Highway 24h Video taken by 'Autostrade per l'Italia' from https://www.autostrade.it/.
 
 ## GMM Limits:
+Using the GMM --> 06:28: the sun has just arisen, but the background detected by the GMM is late, in terms of natural lights
+![GMM demo](https://github.com/daniele21/Background-Subtraction/blob/master/Results/GMM%20limits.png)
+
+### Lights analysis GMM:
+This analysis is based on the Average Pixel Intensity (API) and it shows how the detected background adapts to the changing lights (sunset or sunrise).
+
+![GMM result](https://github.com/daniele21/Background-Subtraction/blob/master/Results/GMM_results.png)
+- The red line represents the API for the original frames of the video
+- The greed line represents the API for the background detection frames of GMM
+### Analysis: GMM provides background subtraction frames that are behind in terms of natural lights 
+
+
+## AGM Solution:
+Using the AGM --> 06:28: the sun has just arisen and the background detected by the AGM is very similar to the real one, in terms of natural lights
+![AGM demo](https://github.com/daniele21/Background-Subtraction/blob/master/Results/AGM%20solution.png)
+
+### Lights analysis AGM:
+![AGM result](https://github.com/daniele21/Background-Subtraction/blob/master/Results/AGM_results.png)
+- The red line represents the API for the original frames of the video
+- The greed line represents the API for the background detection frames of AGM
+### Analysis: AGM provides background subtraction frames very near to the real ones
